@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>黑洞戰爭 — 直角坐標平面數位桌遊</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  /* ===== 全域 ===== */
+  :root {
+    --bg: #0d1117; --card: #161b22; --accent: #e94560;
+    --accent2: #0f3460; --text: #e6edf3; --muted: #8b949e;
+    --border: #30363d; --white-hole: #00d2ff; --twin: #ffd700;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family: 'Noto Sans TC', 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height:1.7; }
+  h1,h2,h3 { font-weight:700; }
+  a { color: var(--accent); text-decoration:none; }
+
+  /* ===== 導航 ===== */
+  nav { position:sticky; top:0; z-index:100; background:rgba(13,17,23,.95); backdrop-filter:blur(8px); border-bottom:1px solid var(--border); padding:12px 0; }
+  nav ul { display:flex; justify-content:center; gap:24px; list-style:none; flex-wrap:wrap; }
+  nav a { color:var(--muted); font-size:.95rem; transition:color .2s; }
+  nav a:hover, nav a.active { color:var(--accent); }
+
+  /* ===== 區塊共用 ===== */
+  .section { max-width:960px; margin:0 auto; padding:48px 20px; }
+  .section-title { font-size:1.8rem; margin-bottom:8px; display:flex; align-items:center; gap:10px; }
+  .section-title span { font-size:1.4rem; }
+  .section-sub { color:var(--muted); margin-bottom:32px; font-size:1rem; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px; margin-bottom:20px; }
+
+  /* ===== 1. 遊戲規則 ===== */
+  .rule-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:16px; }
+  .rule-card { text-align:center; padding:20px; }
+  .rule-icon { font-size:2.5rem; margin-bottom:12px; }
+  .rule-card h3 { margin-bottom:8px; font-size:1.1rem; }
+  .rule-card p { color:var(--muted); font-size:.9rem; }
+  .item-table { width:100%; border-collapse:collapse; margin-top:16px; }
+  .item-table th, .item-table td { padding:10px 14px; text-align:left; border-bottom:1px solid var(--border); font-size:.95rem; }
+  .item-table th { color:var(--accent); font-weight:600; }
+  .badge { display:inline-block; padding:2px 10px; border-radius:20px; font-size:.8rem; font-weight:600; }
+  .badge-black { background:#333; color:#fff; }
+  .badge-white { background:var(--white-hole); color:#000; }
+  .badge-twin { background:var(--twin); color:#000; }
+  .badge-card { background:var(--accent2); color:#fff; }
+
+  /* ===== 2. 分組 ===== */
+  .group-controls { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:24px; }
+  .group-controls label { font-size:.95rem; }
+  .group-controls input[type=number] { width:80px; padding:8px 12px; border-radius:8px; border:1px solid var(--border); background:var(--bg); color:var(--text); font-size:1rem; }
+  .btn { padding:10px 24px; border:none; border-radius:8px; font-size:.95rem; font-weight:600; cursor:pointer; transition:all .2s; }
+  .btn-primary { background:var(--accent); color:#fff; }
+  .btn-primary:hover { background:#c73650; transform:translateY(-1px); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn-outline:hover { border-color:var(--accent); color:var(--accent); }
+  .group-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:16px; }
+  .group-card { display:flex; gap:16px; align-items:center; }
+  .group-info { flex:1; }
+  .group-num { font-size:1.3rem; font-weight:700; color:var(--accent); }
+  .group-members { margin-top:6px; font-size:.9rem; }
+  .role { display:inline-block; padding:1px 8px; border-radius:4px; font-size:.75rem; margin-left:4px; }
+  .role-p1 { background:var(--accent); color:#fff; }
+  .role-p2 { background:var(--accent2); color:#fff; }
+  .role-ref { background:#238636; color:#fff; }
+  .qr-box { width:80px; height:80px; flex-shrink:0; }
+  .qr-box canvas { border-radius:6px; }
+
+  /* ===== 3. 列印 QR ===== */
+  @media print {
+    body * { visibility:hidden; }
+    #print-area, #print-area * { visibility:visible; }
+    #print-area { position:absolute; top:0; left:0; width:100%; }
+    .print-grid { display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; page-break-inside:avoid; }
+    .print-item { text-align:center; padding:8px; border:1px solid #ccc; }
+    .print-item canvas { width:100px!important; height:100px!important; }
+  }
+
+  /* ===== 4. 學習單 ===== */
+  .worksheet-preview { background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:20px; font-size:.9rem; color:var(--muted); }
+
+  /* ===== 5. 影片 ===== */
+  .video-wrapper { position:relative; padding-bottom:56.25%; height:0; overflow:hidden; border-radius:12px; }
+  .video-wrapper iframe { position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:12px; }
+
+  /* ===== Hero ===== */
+  .hero { text-align:center; padding:64px 20px 32px; }
+  .hero h1 { font-size:2.6rem; margin-bottom:8px; }
+  .hero h1 .highlight { color:var(--accent); }
+  .hero p { color:var(--muted); font-size:1.1rem; max-width:600px; margin:0 auto; }
+
+  /* ===== Footer ===== */
+  footer { text-align:center; padding:32px; color:var(--muted); font-size:.85rem; border-top:1px solid var(--border); }
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- 導航列 -->
+<nav>
+  <ul>
+    <li><a href="#rules">遊戲規則</a></li>
+    <li><a href="#groups">分組功能</a></li>
+    <li><a href="#worksheet">學習單</a></li>
+    <li><a href="#video">示範影片</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>🕳️ <span class="highlight">黑洞戰爭</span></h1>
+  <p>國中七年級 — 直角坐標平面數位桌遊<br>兩人對戰 × 座標判讀 × 策略攻防</p>
+</div>
+
+<!-- ========== 1. 遊戲規則 ========== -->
+<section id="rules" class="section">
+  <h2 class="section-title"><span>📋</span> 遊戲規則</h2>
+  <p class="section-sub">每三人一組：兩人對戰、一人監督座標是否正確</p>
+
+  <div class="rule-grid">
+    <div class="card rule-card">
+      <div class="rule-icon">🎯</div>
+      <h3>教學目標</h3>
+      <p>在遊戲中自然學會直角坐標平面的座標判讀與報讀，透過反覆操作熟練 (x, y) 座標概念</p>
+    </div>
+    <div class="card rule-card">
+      <div class="rule-icon">🎲</div>
+      <h3>基本流程</h3>
+      <p>擲骰子 → 報讀座標 → 移動棋子 → 放置道具（黑洞/白洞/雙子星）→ 換對手</p>
+    </div>
+    <div class="card rule-card">
+      <div class="rule-icon">❤️</div>
+      <h3>勝負判定</h3>
+      <p>每位玩家 3 條命，踩進黑洞周圍 4 格即失去一條命，三條命歸零即淘汰，存活者獲勝</p>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:20px;">
+    <h3 style="margin-bottom:12px;">三種道具</h3>
+    <table class="item-table">
+      <tr><th>道具</th><th>效果</th><th>放置規則</th></tr>
+      <tr>
+        <td><span class="badge badge-black">⚫ 黑洞</span></td>
+        <td>周圍 4 格為<strong>死亡區域</strong>，進入即失去一條命</td>
+        <td>放在格子裡（非座標點上）</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-white">⚪ 白洞</span></td>
+        <td>周圍 4 格為<strong>傳送區域</strong>，進入需重新擲骰傳送</td>
+        <td>放在格子裡</td>
+      </tr>
+      <tr>
+        <td><span class="badge badge-twin">⭐ 雙子星</span></td>
+        <td>成對出現的<strong>通道</strong>，進入一顆傳送到另一顆位置</td>
+        <td>一次放一對，放在格子裡</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-bottom:12px;">卡牌系統（第 4 回合起啟動）</h3>
+    <table class="item-table">
+      <tr><th>卡牌</th><th>效果</th></tr>
+      <tr><td><span class="badge badge-card">黑洞擴散</span></td><td>指定一個黑洞，上下左右各多放一個黑洞</td></tr>
+      <tr><td><span class="badge badge-card">黑洞封鎖</span></td><td>移除座標上任何一個黑洞</td></tr>
+      <tr><td><span class="badge badge-card">座標偵測</span></td><td>幫對方指定下一回合的 y 座標</td></tr>
+      <tr><td><span class="badge badge-card">生命護盾</span></td><td>若只剩一條命，下一回合免疫黑洞</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ========== 2. 分組功能 ========== -->
+<section id="groups" class="section">
+  <h2 class="section-title"><span>👥</span> 分組功能</h2>
+  <p class="section-sub">輸入全班人數，自動隨機分組並配對遊戲房間</p>
+
+  <div class="group-controls">
+    <label>全班人數：</label>
+    <input type="number" id="studentCount" value="30" min="2" max="60">
+    <button class="btn btn-primary" onclick="generateGroups()">🎲 隨機分組</button>
+    <button class="btn btn-outline" onclick="printQR()">🖨️ 列印 QR Code</button>
+  </div>
+
+  <div id="groupResult" class="group-grid"></div>
+</section>
+
+<!-- 列印用隱藏區域 -->
+<div id="print-area" style="display:none;"></div>
+
+<!-- ========== 3. 學習單 ========== -->
+<section id="worksheet" class="section">
+  <h2 class="section-title"><span>📝</span> 學習單下載</h2>
+  <p class="section-sub">結合遊戲情境的直角坐標平面練習，下載 PDF 即可列印</p>
+
+  <div class="card">
+    <div class="worksheet-preview">
+      <p><strong>學習單內容預覽：</strong></p>
+      <ul style="margin:12px 0 12px 20px;">
+        <li>第一題：座標判讀 — 在座標平面上標出指定座標的位置</li>
+        <li>第二題：座標報讀 — 寫出座標平面上標記點的座標</li>
+        <li>第三題：象限判斷 — 判斷座標屬於哪個象限</li>
+        <li>第四題：黑洞危險區 — 根據黑洞位置，判斷哪些座標會出局</li>
+        <li>第五題：白洞傳送 — 計算傳送後的新座標</li>
+        <li>第六題：雙子星通道 — 判斷傳送目的地並報讀座標</li>
+        <li>第七題：遊戲策略 — 思考黑洞最佳放置位置</li>
+      </ul>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn btn-primary" onclick="downloadWorksheet()">📥 下載學習單 PDF</button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 4. 示範影片 ========== -->
+<section id="video" class="section">
+  <h2 class="section-title"><span>🎬</span> 遊戲示範影片</h2>
+  <p class="section-sub">觀看完整遊戲示範，了解玩法與教學應用</p>
+  <div class="card" style="padding:0; overflow:hidden;">
+    <div class="video-wrapper">
+      <iframe src="https://www.youtube.com/embed/rorV6pgWh0o" title="黑洞戰爭示範影片" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>黑洞戰爭 — 三師爸 Sense Bar 原創設計 ｜ 適用：七年級下學期 直角坐標平面</p>
+  <p style="margin-top:4px;">遊戲平台：<a href="https://playingcards.io" target="_blank">playingcards.io</a></p>
+</footer>
+
+<script>
+// ===== 遊戲房間連結 =====
+const ROOMS = [
+  'https://playingcards.io/h39ngn','https://playingcards.io/j7fcud',
+  'https://playingcards.io/kbvbd2','https://playingcards.io/87cggt',
+  'https://playingcards.io/avqfd6','https://playingcards.io/6h4kj9',
+  'https://playingcards.io/792dn3','https://playingcards.io/b9qjkv',
+  'https://playingcards.io/szz9bk','https://playingcards.io/4ta8c8',
+  'https://playingcards.io/5c6fut','https://playingcards.io/8mjr6n',
+  'https://playingcards.io/ysqs35','https://playingcards.io/vyjkqh',
+  'https://playingcards.io/n5tsn8','https://playingcards.io/28y3vz',
+  'https://playingcards.io/gxrncq','https://playingcards.io/3d9rjf',
+  'https://playingcards.io/yfamkv','https://playingcards.io/cp97h8',
+  'https://playingcards.io/2kd6k5','https://playingcards.io/y99ydt',
+  'https://playingcards.io/zaghxp','https://playingcards.io/hau33r',
+  'https://playingcards.io/yetgcz','https://playingcards.io/9mer89',
+  'https://playingcards.io/sbqra7','https://playingcards.io/4vd2vp',
+  'https://playingcards.io/ht9ds5','https://playingcards.io/5cp9ny'
+];
+
+// ===== 分組功能 =====
+function generateGroups() {
+  const n = parseInt(document.getElementById('studentCount').value) || 30;
+  // 產生座號陣列並隨機打亂
+  const seats = Array.from({length: n}, (_, i) => i + 1);
+  for (let i = seats.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [seats[i], seats[j]] = [seats[j], seats[i]];
+  }
+
+  // 分組：優先 3 人一組，餘數用 2 人組
+  const groups = [];
+  let idx = 0;
+  const remainder = n % 3;
+  const numTwoGroups = remainder === 0 ? 0 : (remainder === 1 ? 2 : 1);
+  const numThreeGroups = Math.floor((n - numTwoGroups * 2) / 3);
+
+  for (let g = 0; g < numThreeGroups; g++) {
+    groups.push(seats.slice(idx, idx + 3));
+    idx += 3;
+  }
+  for (let g = 0; g < numTwoGroups; g++) {
+    groups.push(seats.slice(idx, idx + 2));
+    idx += 2;
+  }
+
+  // 渲染
+  const container = document.getElementById('groupResult');
+  container.innerHTML = '';
+
+  groups.forEach((members, i) => {
+    const roomUrl = ROOMS[i % ROOMS.length];
+    const card = document.createElement('div');
+    card.className = 'card group-card';
+
+    const sortedMembers = [...members].sort((a, b) => a - b);
+    let membersHtml = '';
+    sortedMembers.forEach((m, j) => {
+      const roles = members.length === 3
+        ? ['role-p1', 'role-p2', 'role-ref']
+        : ['role-p1', 'role-p2'];
+      const labels = members.length === 3
+        ? ['玩家1', '玩家2', '監督']
+        : ['玩家1', '玩家2'];
+      // 找回原始索引來對應角色
+      const origIdx = members.indexOf(m);
+      membersHtml += `<div>座號 ${m} <span class="role ${roles[origIdx]}">${labels[origIdx]}</span></div>`;
+    });
+
+    card.innerHTML = `
+      <div class="group-info">
+        <div class="group-num">第 ${i + 1} 組</div>
+        <div class="group-members">${membersHtml}</div>
+        <div style="margin-top:6px;font-size:.8rem;color:var(--muted);">
+          <a href="${roomUrl}" target="_blank">${roomUrl.replace('https://','')} ↗</a>
+        </div>
+      </div>
+      <div class="qr-box" id="qr-${i}"></div>
+    `;
+    container.appendChild(card);
+
+    // 生成 QR Code
+    new QRCode(document.getElementById(`qr-${i}`), {
+      text: roomUrl, width: 80, height: 80,
+      colorDark: '#e6edf3', colorLight: '#161b22',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  });
+}
+
+// ===== 列印 QR Code =====
+function printQR() {
+  const groups = document.querySelectorAll('.group-card');
+  if (groups.length === 0) { alert('請先分組！'); return; }
+
+  const printArea = document.getElementById('print-area');
+  printArea.style.display = 'block';
+  printArea.innerHTML = '<h2 style="text-align:center;margin-bottom:16px;color:#000;">黑洞戰爭 — 遊戲房間 QR Code</h2><div class="print-grid"></div>';
+  const grid = printArea.querySelector('.print-grid');
+
+  groups.forEach((g, i) => {
+    const qrCanvas = g.querySelector('canvas');
+    const link = g.querySelector('a');
+    const item = document.createElement('div');
+    item.className = 'print-item';
+    item.innerHTML = `<strong>第 ${i+1} 組</strong><br>`;
+    if (qrCanvas) {
+      const img = document.createElement('img');
+      img.src = qrCanvas.toDataURL();
+      img.style.width = '100px';
+      item.appendChild(img);
+    }
+    item.innerHTML += `<br><small>${link ? link.textContent : ''}</small>`;
+    grid.appendChild(item);
+  });
+
+  window.print();
+  setTimeout(() => { printArea.style.display = 'none'; }, 500);
+}
+
+// ===== 學習單 PDF =====
+function downloadWorksheet() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  // 標題
+  doc.setFont('Helvetica','bold');
+  doc.setFontSize(18);
+  doc.text('Black Hole War', 105, 18, { align:'center' });
+  doc.setFontSize(10);
+  doc.setFont('Helvetica','normal');
+  doc.text('Coordinate Plane Worksheet', 105, 25, { align:'center' });
+  doc.text('Name: ________________  Class: ________  Date: ________', 105, 33, { align:'center' });
+  doc.setDrawColor(200);
+  doc.line(15, 37, 195, 37);
+
+  let y = 44;
+  const lm = 18; // 左邊距
+  const qSize = 4;
+
+  function drawCheckbox(x, yy) {
+    doc.rect(x, yy - 3, qSize, qSize);
+  }
+
+  function addQ(num, title, lines) {
+    doc.setFont('Helvetica','bold');
+    doc.setFontSize(11);
+    doc.text(`Q${num}. ${title}`, lm, y);
+    y += 6;
+    doc.setFont('Helvetica','normal');
+    doc.setFontSize(9.5);
+    lines.forEach(line => {
+      if (y > 275) { doc.addPage(); y = 20; }
+      doc.text(line, lm + 2, y);
+      y += 5;
+    });
+    y += 3;
+  }
+
+  // 畫座標平面的函數
+  function drawGrid(cx, cy, size, gridCount) {
+    const step = size / gridCount;
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.2);
+    for (let i = 0; i <= gridCount; i++) {
+      doc.line(cx - size/2, cy - size/2 + i*step, cx + size/2, cy - size/2 + i*step);
+      doc.line(cx - size/2 + i*step, cy - size/2, cx - size/2 + i*step, cy + size/2);
+    }
+    // 軸線
+    doc.setDrawColor(0);
+    doc.setLineWidth(0.5);
+    doc.line(cx - size/2, cy, cx + size/2, cy); // x 軸
+    doc.line(cx, cy - size/2, cx, cy + size/2); // y 軸
+    // 標記
+    doc.setFontSize(7);
+    doc.setFont('Helvetica','normal');
+    const half = gridCount / 2;
+    for (let i = -half; i <= half; i++) {
+      if (i === 0) continue;
+      doc.text(String(i), cx + i*step - 1.5, cy + size/2 + 4);
+      doc.text(String(-i), cx - 4, cy + i*step + 1);
+    }
+    doc.text('x', cx + size/2 + 2, cy + 1);
+    doc.text('y', cx + 1, cy - size/2 - 2);
+    doc.text('O', cx - 4, cy + 4);
+  }
+
+  // Q1 座標判讀
+  addQ(1, 'Plot these points on the coordinate plane:', [
+    'A(3, 4)    B(-2, 5)    C(-4, -3)    D(6, -1)    E(0, -5)    F(-3, 0)'
+  ]);
+  drawGrid(105, y + 30, 54, 12);
+  y += 65;
+
+  // Q2 座標報讀
+  addQ(2, 'Read the coordinates of each labeled point:', [
+    '(See the coordinate plane below. Write the coordinates for points P, Q, R, S, T)'
+  ]);
+  drawGrid(105, y + 30, 54, 12);
+  // 標記幾個點
+  const points = [{n:'P',x:2,y:3},{n:'Q',x:-4,y:1},{n:'R',x:-3,y:-4},{n:'S',x:5,y:-2},{n:'T',x:0,y:4}];
+  const gcx = 105, gcy = y+30, gStep = 54/12;
+  doc.setFillColor(233,69,96);
+  points.forEach(p => {
+    const px = gcx + p.x * gStep;
+    const py = gcy - p.y * gStep;
+    doc.circle(px, py, 1.2, 'F');
+    doc.setFontSize(8);
+    doc.setFont('Helvetica','bold');
+    doc.text(p.n, px + 2, py - 1);
+  });
+  y += 65;
+  doc.setFont('Helvetica','normal');
+  doc.setFontSize(9.5);
+  doc.text('P(    ,    )    Q(    ,    )    R(    ,    )    S(    ,    )    T(    ,    )', lm + 2, y);
+  y += 10;
+
+  // Q3 象限
+  addQ(3, 'Which quadrant does each point belong to?', [
+    '(1) (3, -5) => Quadrant ____    (2) (-2, 4) => Quadrant ____',
+    '(3) (-6, -1) => Quadrant ____   (4) (4, 2) => Quadrant ____',
+    '(5) (0, 3) => ____________      (6) (-5, 0) => ____________'
+  ]);
+
+  // Q4 黑洞危險區
+  doc.addPage(); y = 20;
+  addQ(4, 'Black Hole Danger Zone', [
+    'A black hole is placed in the grid square at position (2, 3).',
+    'The 4 coordinate points surrounding the black hole are the danger zone.',
+    '',
+    'List all 4 danger zone coordinates:',
+    '(    ,    )  (    ,    )  (    ,    )  (    ,    )',
+    '',
+    'If a player lands on (-1, 3), are they in danger? (Yes / No) ____',
+    'If a player lands on (2, 4), are they in danger? (Yes / No) ____',
+  ]);
+
+  // Q5 白洞傳送
+  addQ(5, 'White Hole Teleport', [
+    'A player lands on a white hole and rolls the dice again.',
+    'New coordinates: (5, -3).',
+    '',
+    'Plot (5, -3) on a coordinate plane and identify:',
+    'Which quadrant? ________',
+    '',
+    'If there is ANOTHER white hole near (5, -3) and the player must roll again,',
+    'new result: (-2, 6). What quadrant is this? ________',
+  ]);
+
+  // Q6 雙子星
+  addQ(6, 'Twin Star Teleport', [
+    'Twin Star A is at grid position near (1, -2).',
+    'Twin Star B is at grid position near (-4, 5).',
+    '',
+    'A player lands on Twin Star A. Where do they teleport to?',
+    'Coordinates: (    ,    )',
+    '',
+    'The player must read the coordinates out loud. Write the four corner',
+    'coordinates of the grid square where Twin Star B is located:',
+    '(    ,    )  (    ,    )  (    ,    )  (    ,    )',
+  ]);
+
+  // Q7 策略
+  addQ(7, 'Game Strategy', [
+    'You are Player 1. Your opponent has a piece at approximately (3, 2).',
+    'You can place ONE black hole anywhere on the board.',
+    '',
+    'Where would you place the black hole to maximize danger for your opponent?',
+    'Best position: grid square near (    ,    )',
+    '',
+    'Explain your reasoning:',
+    '_______________________________________________________________',
+    '_______________________________________________________________',
+  ]);
+
+  // 頁尾
+  doc.setFontSize(8);
+  doc.setTextColor(150);
+  doc.text('Black Hole War Worksheet | Sense Bar | Grade 7 - Coordinate Plane', 105, 288, {align:'center'});
+
+  doc.save('BlackHoleWar_Worksheet.pdf');
+}
+
+// 頁面載入後自動分組一次
+window.addEventListener('DOMContentLoaded', () => { generateGroups(); });
+</script>
+</body>
+</html>
