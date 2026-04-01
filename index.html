@@ -6,6 +6,7 @@
 <title>黑洞戰爭 — 直角坐標平面數位桌遊</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   /* ===== 全域 ===== */
   :root {
@@ -197,17 +198,225 @@
     <div class="worksheet-preview">
       <p><strong>學習單內容預覽：</strong></p>
       <ul style="margin:12px 0 12px 20px;">
-        <li>第一題：座標判讀 — 在座標平面上標出指定座標的位置</li>
+        <li>第一題：座標標記 — 在座標平面上標出指定座標的位置</li>
         <li>第二題：座標報讀 — 寫出座標平面上標記點的座標</li>
-        <li>第三題：象限判斷 — 判斷座標屬於哪個象限</li>
+        <li>第三題：象限判斷 — 判斷座標屬於哪個象限或軸上</li>
         <li>第四題：黑洞危險區 — 根據黑洞位置，判斷哪些座標會出局</li>
-        <li>第五題：白洞傳送 — 計算傳送後的新座標</li>
+        <li>第五題：白洞傳送 — 計算傳送後的新座標與象限</li>
         <li>第六題：雙子星通道 — 判斷傳送目的地並報讀座標</li>
         <li>第七題：遊戲策略 — 思考黑洞最佳放置位置</li>
       </ul>
     </div>
     <div style="margin-top:16px;">
-      <button class="btn btn-primary" onclick="downloadWorksheet()">📥 下載學習單 PDF</button>
+      <button class="btn btn-primary" onclick="downloadWorksheet()" id="dlBtn">📥 下載學習單 PDF</button>
+      <span id="dlStatus" style="margin-left:12px;font-size:.85rem;color:var(--muted);"></span>
+    </div>
+  </div>
+
+  <!-- 隱藏的學習單 HTML（用於轉 PDF） -->
+  <div id="worksheet-html" style="position:absolute;left:-9999px;top:0;width:794px;background:#fff;color:#000;font-family:'Noto Sans TC',sans-serif;padding:40px 50px;line-height:1.8;">
+
+    <!-- 第 1 頁 -->
+    <div id="ws-page1">
+      <h1 style="text-align:center;font-size:24px;margin:0;">🕳️ 黑洞戰爭 — 學習單</h1>
+      <p style="text-align:center;font-size:13px;color:#666;margin:4px 0 0;">七年級下學期｜直角坐標平面｜三師爸 Sense Bar</p>
+      <p style="text-align:center;font-size:13px;margin:8px 0 16px;">
+        姓名：________________　班級：________　座號：________　日期：________
+      </p>
+      <hr style="border:none;border-top:1.5px solid #333;margin-bottom:20px;">
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">一、座標標記（在下方座標平面上標出各點的位置）</p>
+        <p style="font-size:13px;margin-bottom:10px;padding-left:8px;">
+          A(3, 4)　　B(−2, 5)　　C(−4, −3)　　D(6, −1)　　E(0, −5)　　F(−3, 0)
+        </p>
+        <svg viewBox="0 0 340 340" width="300" height="300" style="display:block;margin:0 auto;border:1px solid #ddd;">
+          <!-- 格線 -->
+          <g stroke="#e0e0e0" stroke-width="0.5">
+            <line x1="20" y1="20" x2="20" y2="320"/><line x1="45" y1="20" x2="45" y2="320"/>
+            <line x1="70" y1="20" x2="70" y2="320"/><line x1="95" y1="20" x2="95" y2="320"/>
+            <line x1="120" y1="20" x2="120" y2="320"/><line x1="145" y1="20" x2="145" y2="320"/>
+            <line x1="195" y1="20" x2="195" y2="320"/><line x1="220" y1="20" x2="220" y2="320"/>
+            <line x1="245" y1="20" x2="245" y2="320"/><line x1="270" y1="20" x2="270" y2="320"/>
+            <line x1="295" y1="20" x2="295" y2="320"/><line x1="320" y1="20" x2="320" y2="320"/>
+            <line x1="20" y1="20" x2="320" y2="20"/><line x1="20" y1="45" x2="320" y2="45"/>
+            <line x1="20" y1="70" x2="320" y2="70"/><line x1="20" y1="95" x2="320" y2="95"/>
+            <line x1="20" y1="120" x2="320" y2="120"/><line x1="20" y1="145" x2="320" y2="145"/>
+            <line x1="20" y1="195" x2="320" y2="195"/><line x1="20" y1="220" x2="320" y2="220"/>
+            <line x1="20" y1="245" x2="320" y2="245"/><line x1="20" y1="270" x2="320" y2="270"/>
+            <line x1="20" y1="295" x2="320" y2="295"/><line x1="20" y1="320" x2="320" y2="320"/>
+          </g>
+          <!-- 軸 -->
+          <line x1="170" y1="15" x2="170" y2="325" stroke="#000" stroke-width="1.5"/>
+          <line x1="15" y1="170" x2="325" y2="170" stroke="#000" stroke-width="1.5"/>
+          <!-- x 軸數字 -->
+          <text x="20" y="183" font-size="9" text-anchor="middle" fill="#555">−6</text>
+          <text x="45" y="183" font-size="9" text-anchor="middle" fill="#555">−5</text>
+          <text x="70" y="183" font-size="9" text-anchor="middle" fill="#555">−4</text>
+          <text x="95" y="183" font-size="9" text-anchor="middle" fill="#555">−3</text>
+          <text x="120" y="183" font-size="9" text-anchor="middle" fill="#555">−2</text>
+          <text x="145" y="183" font-size="9" text-anchor="middle" fill="#555">−1</text>
+          <text x="195" y="183" font-size="9" text-anchor="middle" fill="#555">1</text>
+          <text x="220" y="183" font-size="9" text-anchor="middle" fill="#555">2</text>
+          <text x="245" y="183" font-size="9" text-anchor="middle" fill="#555">3</text>
+          <text x="270" y="183" font-size="9" text-anchor="middle" fill="#555">4</text>
+          <text x="295" y="183" font-size="9" text-anchor="middle" fill="#555">5</text>
+          <text x="320" y="183" font-size="9" text-anchor="middle" fill="#555">6</text>
+          <!-- y 軸數字 -->
+          <text x="160" y="23" font-size="9" text-anchor="end" fill="#555">6</text>
+          <text x="160" y="48" font-size="9" text-anchor="end" fill="#555">5</text>
+          <text x="160" y="73" font-size="9" text-anchor="end" fill="#555">4</text>
+          <text x="160" y="98" font-size="9" text-anchor="end" fill="#555">3</text>
+          <text x="160" y="123" font-size="9" text-anchor="end" fill="#555">2</text>
+          <text x="160" y="148" font-size="9" text-anchor="end" fill="#555">1</text>
+          <text x="160" y="198" font-size="9" text-anchor="end" fill="#555">−1</text>
+          <text x="160" y="223" font-size="9" text-anchor="end" fill="#555">−2</text>
+          <text x="160" y="248" font-size="9" text-anchor="end" fill="#555">−3</text>
+          <text x="160" y="273" font-size="9" text-anchor="end" fill="#555">−4</text>
+          <text x="160" y="298" font-size="9" text-anchor="end" fill="#555">−5</text>
+          <text x="160" y="323" font-size="9" text-anchor="end" fill="#555">−6</text>
+          <text x="330" y="174" font-size="10" fill="#000">x</text>
+          <text x="174" y="12" font-size="10" fill="#000">y</text>
+          <text x="174" y="183" font-size="9" fill="#000">O</text>
+        </svg>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">二、座標報讀（寫出下方座標平面上各標記點的座標）</p>
+        <svg viewBox="0 0 340 340" width="300" height="300" style="display:block;margin:0 auto 8px;border:1px solid #ddd;">
+          <g stroke="#e0e0e0" stroke-width="0.5">
+            <line x1="20" y1="20" x2="20" y2="320"/><line x1="45" y1="20" x2="45" y2="320"/>
+            <line x1="70" y1="20" x2="70" y2="320"/><line x1="95" y1="20" x2="95" y2="320"/>
+            <line x1="120" y1="20" x2="120" y2="320"/><line x1="145" y1="20" x2="145" y2="320"/>
+            <line x1="195" y1="20" x2="195" y2="320"/><line x1="220" y1="20" x2="220" y2="320"/>
+            <line x1="245" y1="20" x2="245" y2="320"/><line x1="270" y1="20" x2="270" y2="320"/>
+            <line x1="295" y1="20" x2="295" y2="320"/><line x1="320" y1="20" x2="320" y2="320"/>
+            <line x1="20" y1="20" x2="320" y2="20"/><line x1="20" y1="45" x2="320" y2="45"/>
+            <line x1="20" y1="70" x2="320" y2="70"/><line x1="20" y1="95" x2="320" y2="95"/>
+            <line x1="20" y1="120" x2="320" y2="120"/><line x1="20" y1="145" x2="320" y2="145"/>
+            <line x1="20" y1="195" x2="320" y2="195"/><line x1="20" y1="220" x2="320" y2="220"/>
+            <line x1="20" y1="245" x2="320" y2="245"/><line x1="20" y1="270" x2="320" y2="270"/>
+            <line x1="20" y1="295" x2="320" y2="295"/><line x1="20" y1="320" x2="320" y2="320"/>
+          </g>
+          <line x1="170" y1="15" x2="170" y2="325" stroke="#000" stroke-width="1.5"/>
+          <line x1="15" y1="170" x2="325" y2="170" stroke="#000" stroke-width="1.5"/>
+          <text x="20" y="183" font-size="9" text-anchor="middle" fill="#555">−6</text>
+          <text x="45" y="183" font-size="9" text-anchor="middle" fill="#555">−5</text>
+          <text x="70" y="183" font-size="9" text-anchor="middle" fill="#555">−4</text>
+          <text x="95" y="183" font-size="9" text-anchor="middle" fill="#555">−3</text>
+          <text x="120" y="183" font-size="9" text-anchor="middle" fill="#555">−2</text>
+          <text x="145" y="183" font-size="9" text-anchor="middle" fill="#555">−1</text>
+          <text x="195" y="183" font-size="9" text-anchor="middle" fill="#555">1</text>
+          <text x="220" y="183" font-size="9" text-anchor="middle" fill="#555">2</text>
+          <text x="245" y="183" font-size="9" text-anchor="middle" fill="#555">3</text>
+          <text x="270" y="183" font-size="9" text-anchor="middle" fill="#555">4</text>
+          <text x="295" y="183" font-size="9" text-anchor="middle" fill="#555">5</text>
+          <text x="320" y="183" font-size="9" text-anchor="middle" fill="#555">6</text>
+          <text x="160" y="23" font-size="9" text-anchor="end" fill="#555">6</text>
+          <text x="160" y="48" font-size="9" text-anchor="end" fill="#555">5</text>
+          <text x="160" y="73" font-size="9" text-anchor="end" fill="#555">4</text>
+          <text x="160" y="98" font-size="9" text-anchor="end" fill="#555">3</text>
+          <text x="160" y="123" font-size="9" text-anchor="end" fill="#555">2</text>
+          <text x="160" y="148" font-size="9" text-anchor="end" fill="#555">1</text>
+          <text x="160" y="198" font-size="9" text-anchor="end" fill="#555">−1</text>
+          <text x="160" y="223" font-size="9" text-anchor="end" fill="#555">−2</text>
+          <text x="160" y="248" font-size="9" text-anchor="end" fill="#555">−3</text>
+          <text x="160" y="273" font-size="9" text-anchor="end" fill="#555">−4</text>
+          <text x="160" y="298" font-size="9" text-anchor="end" fill="#555">−5</text>
+          <text x="160" y="323" font-size="9" text-anchor="end" fill="#555">−6</text>
+          <text x="330" y="174" font-size="10" fill="#000">x</text>
+          <text x="174" y="12" font-size="10" fill="#000">y</text>
+          <text x="174" y="183" font-size="9" fill="#000">O</text>
+          <!-- 標記點 -->
+          <circle cx="220" cy="95" r="4" fill="#e94560"/><text x="228" y="92" font-size="10" font-weight="bold" fill="#e94560">P</text>
+          <circle cx="70" cy="145" r="4" fill="#e94560"/><text x="78" y="142" font-size="10" font-weight="bold" fill="#e94560">Q</text>
+          <circle cx="95" cy="270" r="4" fill="#e94560"/><text x="103" y="267" font-size="10" font-weight="bold" fill="#e94560">R</text>
+          <circle cx="295" cy="220" r="4" fill="#e94560"/><text x="303" y="217" font-size="10" font-weight="bold" fill="#e94560">S</text>
+          <circle cx="170" cy="70" r="4" fill="#e94560"/><text x="178" y="67" font-size="10" font-weight="bold" fill="#e94560">T</text>
+        </svg>
+        <p style="font-size:13px;padding-left:8px;">
+          P(　　,　　)　　Q(　　,　　)　　R(　　,　　)　　S(　　,　　)　　T(　　,　　)
+        </p>
+      </div>
+    </div>
+
+    <!-- 第 2 頁 -->
+    <div id="ws-page2" style="page-break-before:always;padding-top:20px;">
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">三、象限判斷（寫出下列各點位於第幾象限，若在軸上請寫「x 軸上」或「y 軸上」）</p>
+        <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;">
+          <tr style="border-bottom:1px solid #ccc;">
+            <td style="padding:6px 10px;width:33%;">(1) (3, −5) → 第　　象限</td>
+            <td style="padding:6px 10px;width:33%;">(2) (−2, 4) → 第　　象限</td>
+            <td style="padding:6px 10px;width:33%;">(3) (−6, −1) → 第　　象限</td>
+          </tr>
+          <tr>
+            <td style="padding:6px 10px;">(4) (4, 2) → 第　　象限</td>
+            <td style="padding:6px 10px;">(5) (0, 3) → ____________</td>
+            <td style="padding:6px 10px;">(6) (−5, 0) → ____________</td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">四、黑洞危險區</p>
+        <p style="font-size:13px;padding-left:8px;margin-bottom:6px;">
+          在遊戲中，有一個黑洞被放置在座標 (2, 3) 附近的格子裡。<br>
+          黑洞周圍的 4 個座標點都是<strong>死亡區域</strong>，進入即失去一條命。
+        </p>
+        <p style="font-size:13px;padding-left:8px;">
+          (1) 請列出這 4 個危險座標：<br>
+          　　(　　,　　)　(　　,　　)　(　　,　　)　(　　,　　)
+        </p>
+        <p style="font-size:13px;padding-left:8px;margin-top:6px;">
+          (2) 如果玩家擲到 (−1, 3)，會出局嗎？（會 / 不會）________<br>
+          (3) 如果玩家擲到 (2, 4)，會出局嗎？（會 / 不會）________<br>
+          (4) 如果玩家擲到 (3, 3)，會出局嗎？（會 / 不會）________
+        </p>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">五、白洞傳送</p>
+        <p style="font-size:13px;padding-left:8px;">
+          玩家踩到白洞旁邊，需要重新擲骰子傳送到新位置。<br><br>
+          (1) 擲出新座標為 (5, −3)，請問這個點在第幾象限？ 第　　象限<br><br>
+          (2) 傳送到 (5, −3) 之後，附近又有白洞，再次擲骰結果為 (−2, 6)。<br>
+          　　請問這個點在第幾象限？ 第　　象限<br><br>
+          (3) 如果兩次傳送後到達 (0, −4)，請問這個點在什麼位置？ ____________
+        </p>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">六、雙子星通道</p>
+        <p style="font-size:13px;padding-left:8px;">
+          遊戲中雙子星是成對出現的通道。<br>
+          雙子星 A 位於座標 (1, −2) 附近的格子，雙子星 B 位於座標 (−4, 5) 附近的格子。<br><br>
+          (1) 玩家踩到雙子星 A，會被傳送到哪裡？<br>
+          　　傳送至座標 (　　,　　) 附近<br><br>
+          (2) 傳送後，玩家必須報讀目的地座標。請寫出雙子星 B 所在格子的四個頂點座標：<br>
+          　　(　　,　　)　(　　,　　)　(　　,　　)　(　　,　　)<br><br>
+          (3) 雙子星 A 在第　　象限，雙子星 B 在第　　象限。
+        </p>
+      </div>
+
+      <div style="margin-bottom:22px;">
+        <p style="font-weight:700;font-size:14px;margin-bottom:4px;">七、遊戲策略</p>
+        <p style="font-size:13px;padding-left:8px;">
+          你是 1 號玩家。對手的棋子目前在座標 (3, 2) 附近。<br>
+          你可以放置一個黑洞在棋盤上的任意格子裡。<br><br>
+          (1) 你會把黑洞放在哪個位置，才能讓對手最危險？<br>
+          　　最佳位置：(　　,　　) 附近的格子<br><br>
+          (2) 請說明你的理由：<br>
+          　　_______________________________________________________________<br>
+          　　_______________________________________________________________<br><br>
+          (3) 如果對手抽到「黑洞封鎖」卡牌，他可以怎麼做？<br>
+          　　_______________________________________________________________
+        </p>
+      </div>
+
+      <p style="text-align:center;font-size:10px;color:#999;margin-top:30px;">
+        黑洞戰爭學習單｜三師爸 Sense Bar｜七年級 — 直角坐標平面
+      </p>
     </div>
   </div>
 </section>
@@ -348,167 +557,51 @@ function printQR() {
   setTimeout(() => { printArea.style.display = 'none'; }, 500);
 }
 
-// ===== 學習單 PDF =====
-function downloadWorksheet() {
+// ===== 學習單 PDF（中文版，HTML → Canvas → PDF）=====
+async function downloadWorksheet() {
+  const btn = document.getElementById('dlBtn');
+  const status = document.getElementById('dlStatus');
+  btn.disabled = true;
+  status.textContent = '生成中，請稍候...';
+
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const pageW = 210, pageH = 297;
 
-  // 標題
-  doc.setFont('Helvetica','bold');
-  doc.setFontSize(18);
-  doc.text('Black Hole War', 105, 18, { align:'center' });
-  doc.setFontSize(10);
-  doc.setFont('Helvetica','normal');
-  doc.text('Coordinate Plane Worksheet', 105, 25, { align:'center' });
-  doc.text('Name: ________________  Class: ________  Date: ________', 105, 33, { align:'center' });
-  doc.setDrawColor(200);
-  doc.line(15, 37, 195, 37);
+  // 將隱藏的 HTML 移到可見位置（html2canvas 需要）
+  const wsEl = document.getElementById('worksheet-html');
+  wsEl.style.left = '0';
+  wsEl.style.top = '0';
+  wsEl.style.position = 'fixed';
+  wsEl.style.zIndex = '-1';
+  wsEl.style.opacity = '0.01';
 
-  let y = 44;
-  const lm = 18; // 左邊距
-  const qSize = 4;
-
-  function drawCheckbox(x, yy) {
-    doc.rect(x, yy - 3, qSize, qSize);
-  }
-
-  function addQ(num, title, lines) {
-    doc.setFont('Helvetica','bold');
-    doc.setFontSize(11);
-    doc.text(`Q${num}. ${title}`, lm, y);
-    y += 6;
-    doc.setFont('Helvetica','normal');
-    doc.setFontSize(9.5);
-    lines.forEach(line => {
-      if (y > 275) { doc.addPage(); y = 20; }
-      doc.text(line, lm + 2, y);
-      y += 5;
-    });
-    y += 3;
-  }
-
-  // 畫座標平面的函數
-  function drawGrid(cx, cy, size, gridCount) {
-    const step = size / gridCount;
-    doc.setDrawColor(200);
-    doc.setLineWidth(0.2);
-    for (let i = 0; i <= gridCount; i++) {
-      doc.line(cx - size/2, cy - size/2 + i*step, cx + size/2, cy - size/2 + i*step);
-      doc.line(cx - size/2 + i*step, cy - size/2, cx - size/2 + i*step, cy + size/2);
+  try {
+    const pages = [document.getElementById('ws-page1'), document.getElementById('ws-page2')];
+    for (let i = 0; i < pages.length; i++) {
+      if (i > 0) doc.addPage();
+      const canvas = await html2canvas(pages[i], {
+        scale: 2, useCORS: true, backgroundColor: '#ffffff',
+        width: 794, windowWidth: 794
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const ratio = canvas.width / canvas.height;
+      let imgW = pageW - 10, imgH = imgW / ratio;
+      if (imgH > pageH - 10) { imgH = pageH - 10; imgW = imgH * ratio; }
+      doc.addImage(imgData, 'JPEG', 5, 5, imgW, imgH);
     }
-    // 軸線
-    doc.setDrawColor(0);
-    doc.setLineWidth(0.5);
-    doc.line(cx - size/2, cy, cx + size/2, cy); // x 軸
-    doc.line(cx, cy - size/2, cx, cy + size/2); // y 軸
-    // 標記
-    doc.setFontSize(7);
-    doc.setFont('Helvetica','normal');
-    const half = gridCount / 2;
-    for (let i = -half; i <= half; i++) {
-      if (i === 0) continue;
-      doc.text(String(i), cx + i*step - 1.5, cy + size/2 + 4);
-      doc.text(String(-i), cx - 4, cy + i*step + 1);
-    }
-    doc.text('x', cx + size/2 + 2, cy + 1);
-    doc.text('y', cx + 1, cy - size/2 - 2);
-    doc.text('O', cx - 4, cy + 4);
+    doc.save('黑洞戰爭_學習單.pdf');
+    status.textContent = '✅ 下載完成！';
+  } catch (e) {
+    status.textContent = '❌ 生成失敗，請重試';
+    console.error(e);
+  } finally {
+    wsEl.style.left = '-9999px';
+    wsEl.style.position = 'absolute';
+    wsEl.style.opacity = '1';
+    btn.disabled = false;
+    setTimeout(() => { status.textContent = ''; }, 3000);
   }
-
-  // Q1 座標判讀
-  addQ(1, 'Plot these points on the coordinate plane:', [
-    'A(3, 4)    B(-2, 5)    C(-4, -3)    D(6, -1)    E(0, -5)    F(-3, 0)'
-  ]);
-  drawGrid(105, y + 30, 54, 12);
-  y += 65;
-
-  // Q2 座標報讀
-  addQ(2, 'Read the coordinates of each labeled point:', [
-    '(See the coordinate plane below. Write the coordinates for points P, Q, R, S, T)'
-  ]);
-  drawGrid(105, y + 30, 54, 12);
-  // 標記幾個點
-  const points = [{n:'P',x:2,y:3},{n:'Q',x:-4,y:1},{n:'R',x:-3,y:-4},{n:'S',x:5,y:-2},{n:'T',x:0,y:4}];
-  const gcx = 105, gcy = y+30, gStep = 54/12;
-  doc.setFillColor(233,69,96);
-  points.forEach(p => {
-    const px = gcx + p.x * gStep;
-    const py = gcy - p.y * gStep;
-    doc.circle(px, py, 1.2, 'F');
-    doc.setFontSize(8);
-    doc.setFont('Helvetica','bold');
-    doc.text(p.n, px + 2, py - 1);
-  });
-  y += 65;
-  doc.setFont('Helvetica','normal');
-  doc.setFontSize(9.5);
-  doc.text('P(    ,    )    Q(    ,    )    R(    ,    )    S(    ,    )    T(    ,    )', lm + 2, y);
-  y += 10;
-
-  // Q3 象限
-  addQ(3, 'Which quadrant does each point belong to?', [
-    '(1) (3, -5) => Quadrant ____    (2) (-2, 4) => Quadrant ____',
-    '(3) (-6, -1) => Quadrant ____   (4) (4, 2) => Quadrant ____',
-    '(5) (0, 3) => ____________      (6) (-5, 0) => ____________'
-  ]);
-
-  // Q4 黑洞危險區
-  doc.addPage(); y = 20;
-  addQ(4, 'Black Hole Danger Zone', [
-    'A black hole is placed in the grid square at position (2, 3).',
-    'The 4 coordinate points surrounding the black hole are the danger zone.',
-    '',
-    'List all 4 danger zone coordinates:',
-    '(    ,    )  (    ,    )  (    ,    )  (    ,    )',
-    '',
-    'If a player lands on (-1, 3), are they in danger? (Yes / No) ____',
-    'If a player lands on (2, 4), are they in danger? (Yes / No) ____',
-  ]);
-
-  // Q5 白洞傳送
-  addQ(5, 'White Hole Teleport', [
-    'A player lands on a white hole and rolls the dice again.',
-    'New coordinates: (5, -3).',
-    '',
-    'Plot (5, -3) on a coordinate plane and identify:',
-    'Which quadrant? ________',
-    '',
-    'If there is ANOTHER white hole near (5, -3) and the player must roll again,',
-    'new result: (-2, 6). What quadrant is this? ________',
-  ]);
-
-  // Q6 雙子星
-  addQ(6, 'Twin Star Teleport', [
-    'Twin Star A is at grid position near (1, -2).',
-    'Twin Star B is at grid position near (-4, 5).',
-    '',
-    'A player lands on Twin Star A. Where do they teleport to?',
-    'Coordinates: (    ,    )',
-    '',
-    'The player must read the coordinates out loud. Write the four corner',
-    'coordinates of the grid square where Twin Star B is located:',
-    '(    ,    )  (    ,    )  (    ,    )  (    ,    )',
-  ]);
-
-  // Q7 策略
-  addQ(7, 'Game Strategy', [
-    'You are Player 1. Your opponent has a piece at approximately (3, 2).',
-    'You can place ONE black hole anywhere on the board.',
-    '',
-    'Where would you place the black hole to maximize danger for your opponent?',
-    'Best position: grid square near (    ,    )',
-    '',
-    'Explain your reasoning:',
-    '_______________________________________________________________',
-    '_______________________________________________________________',
-  ]);
-
-  // 頁尾
-  doc.setFontSize(8);
-  doc.setTextColor(150);
-  doc.text('Black Hole War Worksheet | Sense Bar | Grade 7 - Coordinate Plane', 105, 288, {align:'center'});
-
-  doc.save('BlackHoleWar_Worksheet.pdf');
 }
 
 // 頁面載入後自動分組一次
